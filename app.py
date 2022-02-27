@@ -1,27 +1,31 @@
 # Tkinter
 import tkinter as tk
-from tkinter import OFF, ttk
+from tkinter import ttk
 from tkinter import filedialog as fd
 # PyDub
 from pydub import AudioSegment
 # MatPlotLib
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-plt.style.use("./waveform.mplstyle")
 # Numpy
 import numpy
+
+
+# MatPlotLib Stylesheet
+plt.style.use("./waveform.mplstyle")
 
 
 # Root window
 root = tk.Tk()
 root.title('AutoSlicer')
-root.geometry("1200x300")
+root.geometry("1250x250")
+root.resizable(False, False)
 root.configure(bg="#333")
 
 
 # Import and load imput_sample to PyDub
 def import_file():
-    filetypes = (("Audio files", "*.wav *.mp3 *.aif"),)
+    filetypes = (("Audio files", "*.wav *.mp3 *.aif *.ogg"),)
     filepath = fd.askopenfile(filetypes=filetypes).name
     audio_file = AudioSegment.from_file(filepath)
     plot_waveform(audio_file)
@@ -29,35 +33,30 @@ def import_file():
 
 # Plot waveform via matplotlib
 def plot_waveform(audio_file):
-    # Convert audio to mono and get array och sample data
-    mono = audio_file.set_channels(1)
-    mono = mono.set_sample_width(2)
-    samples = mono.get_array_of_samples()
-    # Get the seconds for plotting X
-    fps = mono.frame_rate
-    time = numpy.linspace(0, len(samples)/fps, num=len(samples))
+    # Convert audio to 16Bit mono and get array of sample data
+    samples = audio_file.set_channels(1).set_sample_width(2).get_array_of_samples()
     # Plot the waveform with the samples
-    fig = plt.figure()
+    fig = plt.figure(dpi=50)
     waveplot = fig.add_subplot(111)
-    waveplot.plot(time, samples, color="#FF8800")
+    waveplot.plot(samples, color="#FF8800")
     waveplot.set_yticks([-32768, -16384, 0, 16384, 32767])
     # Draw the plot with Tkinter canvas
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=0, columnspan=2, sticky="NSEW")
+    canvas.get_tk_widget().grid(row=0, sticky="NSEW")
 
 
+# Export Sliced Sample(s)
 def export_file():
     pass
 
 
-
 # Frame for button row
 frame = tk.Frame(root)
-frame.grid(row=1, columnspan=3, sticky="SEW")
+frame.grid(row=1, sticky="SEW")
 frame.configure(background="#444")
 
-# Import/Export buttons
+# Buttons
 import_button = tk.Button(frame, text="Import", command=import_file)
 threshold_input = tk.Spinbox(frame)
 fade_in_input = tk.Spinbox(frame)

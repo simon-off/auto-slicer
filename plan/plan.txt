@@ -6,11 +6,11 @@ När sample-styrkan (volymen) går över THRESHOLD igen: Skapa ny ljudfil.
 
 ### OPTIONS ###
 
-THRESHOLD (-100 - 0.db)     Numeric input
-TAIL: (0.1 - 20s)           Numeric input
-FADE IN: (0 - 1s)           Numeric input
-FADE OUT: (0 - 10s)	        Numeric input
-NORMALIZE SAMPLES           Radio
+THRESHOLD (-100 - 0.db)                     Numeric input
+TAIL: (0.1 - 20s)                           Numeric input
+FADE IN: (0 - 1s)                           Numeric input
+FADE OUT: (0 - (slice_length - FADE IN)	    Numeric input
+NORMALIZE SAMPLES                           Checkbox
 
 
 ### BUTTONS ###

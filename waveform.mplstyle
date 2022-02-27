@@ -13,14 +13,16 @@ font.size: 6
 
 ytick.left: False
 ytick.labelleft: False
+xtick.bottom: False
+xtick.labelbottom: False
 
 xtick.major.size: 0
 xtick.labelcolor: AAAAAA
 
 figure.subplot.left: 0
 figure.subplot.right: 1
-figure.subplot.bottom: 0.07
+figure.subplot.bottom: 0
 figure.subplot.top: 1
 
 axes.facecolor: 333333
-figure.facecolor: 222222
+figure.frameon: False
