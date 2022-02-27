@@ -1,0 +1,4 @@
+path.simplify: True
+lines.linewidth: 1
+axes.grid: True 
+axes.grid.axis: y
