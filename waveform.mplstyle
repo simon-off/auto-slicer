@@ -9,8 +9,6 @@ grid.color: 555555
 axes.xmargin: 0
 axes.ymargin: 0
 
-font.size: 6
-
 ytick.left: False
 ytick.labelleft: False
 xtick.bottom: False
@@ -24,5 +22,5 @@ figure.subplot.right: 1
 figure.subplot.bottom: 0
 figure.subplot.top: 1
 
-axes.facecolor: 333333
+axes.facecolor: 111111
 figure.frameon: False
