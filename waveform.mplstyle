@@ -22,5 +22,6 @@ figure.subplot.right: 1
 figure.subplot.bottom: 0
 figure.subplot.top: 1
 
-axes.facecolor: 111111
+axes.facecolor: 191919
+figure.facecolor: 191919
 figure.frameon: False
