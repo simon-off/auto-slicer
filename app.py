@@ -1,6 +1,6 @@
 # Tkinter
 import tkinter as tk
-from tkinter import ttk, font
+from tkinter import HORIZONTAL, ttk, font
 from tkinter import filedialog as fd
 from turtle import right
 # PyDub
@@ -10,6 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
 # Numpy
 import numpy
+# Math
+import math
 
 
 # MatPlotLib Stylesheet
@@ -19,7 +21,8 @@ plt.style.use("./waveform.mplstyle")
 # Define global variables
 filepath = None
 audio_file = None
-threshold = -50
+line_canvas = None
+threshold = 0
 
 
 # Root window
@@ -47,7 +50,6 @@ def import_file():
     plot_waveform()
     filepath_label.config(text = filepath)
     audio_length_label.config(text = str(round(audio_file.duration_seconds, 3)) + " SECONDS")
-    draw_lines()
 
 
 # Plot waveform via matplotlib
@@ -67,19 +69,24 @@ def plot_waveform():
     canvas.get_tk_widget().grid(row=0, sticky="NSEW")
     canvas.get_tk_widget().configure(background='black')
 
+    # Add threshold line
+    global line_canvas
+    line_canvas = tk.Canvas(main_frame)
+    draw_lines()
 
-line_canvas = tk.Canvas(main_frame)
+
 # Update and draw Threshold Line
 def draw_lines():
-    line_canvas.configure(bg="#0099FF", height=2, highlightthickness=0)
-    line_canvas.place(relwidth=100, rely=((threshold / -200) - 0.002))
-
-draw_lines()
+    if line_canvas != None:
+        line_canvas.configure(bg="#0099FF", height=2, highlightthickness=0)
+        line_canvas.place(relwidth=100, rely=((-threshold / 200) - 0.002 + 0.5))
 
 
 # Command that runs when changing the threshold value
-def update_threshold(input):
-    if input and int(input) <= 0 and int(input) >= -100:
+def update_threshold(trash):
+    input = threshold_input.get()
+    threshold_value.config(text=input)
+    if input and int(input) >= 0 and int(input) <= 100:
         global threshold
         threshold = int(input)
         draw_lines()
@@ -92,10 +99,15 @@ thresh=root.register(update_threshold)
 
 # Export Sliced Sample(s)
 def export_file():
-    slices = silence.split_on_silence(audio_file, min_silence_len=100)
-    for i, slice in enumerate(slices):
-        with open("test/sound-%s.wav" % i, "wb") as f:
-            slice.export(f, format="wav")
+    if filepath != None:
+        # calculate proper dbfs values for the split_on_silence function
+        threshold_16 = numpy.interp(threshold, [0, 100], [0, 32768])
+        valueDBFS = round(20 * math.log10(abs(threshold_16)/32768), 1)
+        export_folder = fd.askdirectory()
+        slices = silence.split_on_silence(audio_file, silence_thresh=valueDBFS)
+        for i, slice in enumerate(slices):
+            with open("{}/sound-{}.wav".format(export_folder, i), "wb") as f:
+                slice.export(f, format="wav")
 
 
 # Draw button_frame for label row
@@ -118,8 +130,10 @@ button_frame.grid(row=2, sticky="SEW")
 import_button = tk.Button(button_frame, text="Import", command=import_file)
 
 threshold_label = tk.Label(button_frame, text="Threshold ", anchor="e")
-threshold_input = tk.Spinbox(button_frame, from_=-100, to=0)
-threshold_input.config(validate="all", validatecommand=(thresh, '%P'))
+#threshold_input = tk.Spinbox(button_frame, from_=0, to=100)
+threshold_input = tk.Scale(button_frame, showvalue=False, orient=HORIZONTAL, from_=0, to=100, command=update_threshold)
+threshold_value = tk.Label(button_frame, text=0, anchor="w")
+#threshold_input.config(validate="all", validatecommand=(thresh, '%P'))
 
 fade_in_label = tk.Label(button_frame, text="Fade in ", anchor="e")
 fade_in_input = tk.Spinbox(button_frame, from_=0, to=1000)
@@ -138,6 +152,7 @@ buttons = [
     import_button,
     threshold_label,
     threshold_input,
+    threshold_value,
     fade_in_label,
     fade_in_input,
     fade_out_label,
@@ -150,7 +165,7 @@ for i, button in enumerate(buttons):
     button.grid(row=1, column=i, sticky="NSEW")
     button.configure(bg="#222", fg="#FFF", activebackground="#333", bd=1)
 
-threshold_input.configure(buttonbackground="#333", insertbackground="white")
+#threshold_input.configure(buttonbackground="#333", insertbackground="white")
 fade_in_input.configure(buttonbackground="#333", insertbackground="white")
 fade_out_input.configure(buttonbackground="#333", insertbackground="white")
 
