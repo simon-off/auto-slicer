@@ -20,3 +20,10 @@ EXPORT
 
 ### GUI ###
 Big waveform visualisation with markers for THRESHOLD, CUTS, FADES,
+
+
+### FIX ###
+Gör LOADING när man exporterar.
+Fixa slice-grejen
+implementera fades och NORMALIZE
+addera silence_length eller vad det nu heter.
