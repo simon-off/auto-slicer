@@ -1,9 +1,8 @@
 # Tkinter
 import tkinter as tk
-from tkinter import ttk
 from tkinter import filedialog
 # PyDub
-from pydub import AudioSegment, silence
+from pydub import AudioSegment, silence, effects
 # MatPlotLib
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -11,6 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy
 # Math
 import math
+# Path
+from pathlib import Path
 
 
 # MatPlotLib Stylesheet
@@ -42,7 +43,11 @@ root.configure(bg="#191919")
 def import_file():
     filetypes = (("Audio files", "*.wav *.mp3 *.aif *.ogg"),)
     global filepath
-    filepath = filedialog.askopenfile(filetypes=filetypes).name
+    file = filedialog.askopenfile(filetypes=filetypes)
+    if not file:
+        print("import canceled")
+        return
+    filepath = file.name
 
     global audio_file
     audio_file = AudioSegment.from_file(filepath)
@@ -104,12 +109,27 @@ def export_file():
         # calculate proper dbfs values for the split_on_silence function
         threshold_16 = numpy.interp(threshold, [0, 100], [1, 32768])
         valueDBFS = round(20 * math.log10(abs(threshold_16)/32768), 1)
+        print(valueDBFS)
 
+        # Get the export folder and check for cancel
         export_folder = filedialog.askdirectory()
-        slices = silence.split_on_silence(audio_file, silence_thresh=valueDBFS)
+        if not export_folder:
+            print("export canceled")
+            return
+
+        # Split the audiofile
+        slices = silence.split_on_silence(audio_file, min_silence_len=20, silence_thresh=int(valueDBFS), keep_silence=0, seek_step=1)
+        slice_counter = 0
+
+        # Export the slices as separate audiofiles
+        filename = Path(filepath).stem
         for i, slice in enumerate(slices):
-            with open("{}/slice-{}.wav".format(export_folder, i), "wb") as f:
+            with open("{}/{}_slice-{}.wav".format(export_folder, filename, i), "wb") as f:
+                if normalize_bool.get():
+                    slice = effects.normalize(slice)
                 slice.export(f, format="wav")
+                slice_counter += 1
+        print("Exported: " + str(slice_counter) + " slices")
 
 
 # Frame to draw graph and lines
@@ -145,7 +165,8 @@ threshold_input = tk.Scale(
 threshold_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade in widgets
 fade_in_label = tk.Label(button_frame, text="Fade in ", anchor="e")
-fade_in_input = tk.Scale(button_frame,
+fade_in_input = tk.Scale(
+    button_frame,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
@@ -154,7 +175,8 @@ fade_in_input = tk.Scale(button_frame,
 fade_in_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade out widgets
 fade_out_label = tk.Label(button_frame, text="Fade out ", anchor="e")
-fade_out_input = tk.Scale(button_frame,
+fade_out_input = tk.Scale(
+    button_frame,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
@@ -162,7 +184,13 @@ fade_out_input = tk.Scale(button_frame,
     )
 fade_out_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Normalize widgets
-normalize_button = tk.Checkbutton(button_frame, text="Normalize", selectcolor="#444", activeforeground="#AAA")
+normalize_bool = tk.BooleanVar()
+normalize_button = tk.Checkbutton(
+    button_frame,
+    text="Normalize",
+    selectcolor="#444",
+    activeforeground="#AAA",
+    variable=normalize_bool)
 normalize_button.deselect()
 # Export widget
 export_button = tk.Button(button_frame, text="Export", activeforeground="#AAA", command=export_file)
