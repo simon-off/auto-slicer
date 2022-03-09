@@ -23,6 +23,9 @@ filepath = None
 audio_file = None
 line_canvas = None
 threshold = 0
+padding = 0
+fade_in = 0
+fade_out = 0
 
 
 # Exit program command
@@ -95,12 +98,23 @@ def update_threshold(value):
     threshold = int(value)
     draw_lines()
 
+# Command that runs when changing the padding value
+def update_padding(value):
+    padding_value.config(text=value)
+    global padding
+    padding = int(value)
 
-# Commands to update the fade_in/fade_out label
+# Command that runs when changing the padding value
 def update_fade_in(value):
     fade_in_value.config(text=value)
+    global fade_in
+    fade_in = int(value)
+
+# Command that runs when changing the padding value
 def update_fade_out(value):
     fade_out_value.config(text=value)
+    global fade_out
+    fade_out = int(value)
 
 
 # Export Sliced Sample(s)
@@ -117,8 +131,20 @@ def export_file():
             print("export canceled")
             return
 
+        # Check if tight split
+        silence_length = 500
+        if tight_bool.get():
+            silence_length = 25
+        else:
+            silence_length = 500
+
         # Split the audiofile
-        slices = silence.split_on_silence(audio_file, min_silence_len=20, silence_thresh=int(valueDBFS), keep_silence=0, seek_step=1)
+        slices = silence.split_on_silence(
+            audio_file,
+            min_silence_len=silence_length,
+            silence_thresh=valueDBFS,
+            keep_silence=padding,
+            seek_step=1)
         slice_counter = 0
 
         # Export the slices as separate audiofiles
@@ -163,18 +189,36 @@ threshold_input = tk.Scale(
     command=update_threshold,
     )
 threshold_value = tk.Label(button_frame, text=0, anchor="w", width=1)
+# Padding widgets
+padding_label = tk.Label(button_frame, text="Padding MS ", anchor="e")
+padding_input = tk.Scale(
+    button_frame,
+    from_=10,
+    to=500,
+    resolution=10,
+    troughcolor="#444",
+    showvalue=False,
+    orient=tk.HORIZONTAL,
+    command=update_padding,
+    )
+padding_value = tk.Label(button_frame, text=10, anchor="w", width=1)
 # Fade in widgets
-fade_in_label = tk.Label(button_frame, text="Fade in ", anchor="e")
+fade_in_int = tk.IntVar()
+fade_in_label = tk.Label(button_frame, text="Fade in MS ", anchor="e")
 fade_in_input = tk.Scale(
     button_frame,
+    from_=0,
+    to=100,
+    resolution=10,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
     command=update_fade_in,
+    variable=fade_in_int
     )
 fade_in_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade out widgets
-fade_out_label = tk.Label(button_frame, text="Fade out ", anchor="e")
+fade_out_label = tk.Label(button_frame, text="Fade out MS ", anchor="e")
 fade_out_input = tk.Scale(
     button_frame,
     troughcolor="#444",
@@ -183,6 +227,16 @@ fade_out_input = tk.Scale(
     command=update_fade_out,
     )
 fade_out_value = tk.Label(button_frame, text=0, anchor="w", width=1)
+# Tight widgets
+tight_bool = tk.BooleanVar()
+tight_button = tk.Checkbutton(
+    button_frame,
+    text="Tight",
+    selectcolor="#444",
+    activeforeground="#AAA",
+    variable=tight_bool
+    )
+tight_button.deselect()
 # Normalize widgets
 normalize_bool = tk.BooleanVar()
 normalize_button = tk.Checkbutton(
@@ -190,7 +244,8 @@ normalize_button = tk.Checkbutton(
     text="Normalize",
     selectcolor="#444",
     activeforeground="#AAA",
-    variable=normalize_bool)
+    variable=normalize_bool
+    )
 normalize_button.deselect()
 # Export widget
 export_button = tk.Button(button_frame, text="Export", activeforeground="#AAA", command=export_file)
@@ -202,12 +257,16 @@ buttons = [
     threshold_label,
     threshold_input,
     threshold_value,
+    padding_label,
+    padding_input,
+    padding_value,
     fade_in_label,
     fade_in_input,
     fade_in_value,
     fade_out_label,
     fade_out_input,
     fade_out_value,
+    tight_button,
     normalize_button,
     export_button
 ]
@@ -225,8 +284,9 @@ tk.Grid.columnconfigure(root, 0, weight=1)
 tk.Grid.rowconfigure(wave_frame, 0, weight=1)
 tk.Grid.columnconfigure(wave_frame, 0, weight=1)
 tk.Grid.columnconfigure(info_frame, 0, weight=1)
-tk.Grid.columnconfigure(button_frame, [0, 2, 5, 8, 10, 11], weight=3)
-tk.Grid.columnconfigure(button_frame, [1, 3, 4, 6, 7, 9], weight=1)
+tk.Grid.columnconfigure(button_frame, [1, 3, 4, 6, 7, 9, 10, 12], weight=1)
+tk.Grid.columnconfigure(button_frame, [13, 14], weight=2)
+tk.Grid.columnconfigure(button_frame, [0, 2, 5, 8, 11, 15], weight=3)
 
 
 root.mainloop()
