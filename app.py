@@ -200,7 +200,7 @@ threshold_input = tk.Scale(
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
-    command=update_threshold,
+    command=update_threshold
     )
 threshold_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Padding widgets
@@ -213,7 +213,7 @@ padding_input = tk.Scale(
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
-    command=update_padding,
+    command=update_padding
     )
 padding_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade in widgets
@@ -226,7 +226,7 @@ fade_in_input = tk.Scale(
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
-    command=update_fade_in,
+    command=update_fade_in
     )
 fade_in_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade out widgets
@@ -239,7 +239,7 @@ fade_out_input = tk.Scale(
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
-    command=update_fade_out,
+    command=update_fade_out
     )
 fade_out_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Tight widgets
