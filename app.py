@@ -40,6 +40,7 @@ root.protocol("WM_DELETE_WINDOW", quit_program)
 root.title('Auto Slicer')
 root.geometry("1320x280+300+300")
 root.configure(bg="#191919")
+root.iconbitmap("icon.ico")
 
 
 # Import and load imput_sample to PyDub
