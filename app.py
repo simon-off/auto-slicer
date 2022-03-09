@@ -54,6 +54,7 @@ def import_file():
 
     global audio_file
     audio_file = AudioSegment.from_file(filepath)
+    audio_file = audio_file.set_sample_width(2)
 
     filepath_label.config(text=filepath)
     audio_length_label.config(text=str(round(audio_file.duration_seconds, 3)) + " SECONDS")
@@ -63,7 +64,7 @@ def import_file():
 # Plot waveform via matplotlib
 def plot_waveform():
     # Convert audio to 16Bit mono and get array of sample data
-    samples = audio_file.set_channels(1).set_sample_width(2).get_array_of_samples()
+    samples = audio_file.set_channels(1).get_array_of_samples()
 
     # Plot the waveform with the samples
     fig = plt.figure(dpi=50)
@@ -120,14 +121,18 @@ def update_fade_out(value):
 # Export Sliced Sample(s)
 def export_file():
     if filepath:
+        # Draw export status label
+        export_status = tk.Label(wave_frame, text="EXPORTING", padx=100, pady=10, bg="#000", fg="#FFF")
+        export_status.place(rely=0.5, y=-20, relwidth=1)
+
         # calculate proper dbfs values for the split_on_silence function
         threshold_16 = numpy.interp(threshold, [0, 100], [1, 32768])
         valueDBFS = round(20 * math.log10(abs(threshold_16)/32768), 1)
-        print(valueDBFS)
 
         # Get the export folder and check for cancel
         export_folder = filedialog.askdirectory()
         if not export_folder:
+            export_status.destroy()
             print("export canceled")
             return
 
@@ -153,9 +158,17 @@ def export_file():
             with open("{}/{}_slice-{}.wav".format(export_folder, filename, i), "wb") as f:
                 if normalize_bool.get():
                     slice = effects.normalize(slice)
+                if fade_in > 0:
+                    slice = slice.fade_in(fade_in)
+                if fade_out > 0:
+                    slice = slice.fade_out(fade_out)
                 slice.export(f, format="wav")
                 slice_counter += 1
-        print("Exported: " + str(slice_counter) + " slices")
+        
+        # Show how many slices where exported for 3 seconds
+        export_status.config(text="EXPORTED:  {}  SLICES".format(slice_counter), bg="#22AA66", fg="#000")
+        export_status.after(3000,lambda:export_status.destroy())
+        print("Exported: " + str(slice_counter) + " Slices")
 
 
 # Frame to draw graph and lines
@@ -193,34 +206,35 @@ threshold_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 padding_label = tk.Label(button_frame, text="Padding MS ", anchor="e")
 padding_input = tk.Scale(
     button_frame,
-    from_=10,
+    from_=0,
     to=500,
-    resolution=10,
+    resolution=5,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
     command=update_padding,
     )
-padding_value = tk.Label(button_frame, text=10, anchor="w", width=1)
+padding_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade in widgets
-fade_in_int = tk.IntVar()
 fade_in_label = tk.Label(button_frame, text="Fade in MS ", anchor="e")
 fade_in_input = tk.Scale(
     button_frame,
     from_=0,
     to=100,
-    resolution=10,
+    resolution=1,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
     command=update_fade_in,
-    variable=fade_in_int
     )
 fade_in_value = tk.Label(button_frame, text=0, anchor="w", width=1)
 # Fade out widgets
 fade_out_label = tk.Label(button_frame, text="Fade out MS ", anchor="e")
 fade_out_input = tk.Scale(
     button_frame,
+    from_=0,
+    to=100,
+    resolution=1,
     troughcolor="#444",
     showvalue=False,
     orient=tk.HORIZONTAL,
