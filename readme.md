@@ -1,8 +1,8 @@
 # Auto Slicer
 
-#### Video Demo: <URL HERE>
+#### Video Demo: https://youtu.be/LYG9DRnCiIg
 
-## Description:
+#### Description:
 
 **Auto Slicer** is a Python GUI application designed to split up long audio files into smaller slices by detecting silence.
 
